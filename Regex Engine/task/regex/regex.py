@@ -1,17 +1,29 @@
-args = input().split("|")
+from collections import deque
 
 
-def compare(regex, string):
-    if not regex:
+def compare_each(char1, char2):
+    if not char1:
         return True
-    elif not string:
+    elif not char2:
         return False
-    elif regex == ".":
+    elif char1 == ".":
         return True
-    elif regex == string:
+    elif char1 == char2:
         return True
     return False
 
 
-print(compare(*args))
+def compare_equal_len(regex, string):
+    if not regex:
+        return True
+    elif not string:
+        return False
+    elif not compare_each(regex.popleft(), string.popleft()):
+        return False
+    return compare_equal_len(regex, string)
 
+
+args = input().split("|")
+regex_in = deque(args[0])
+string_in = deque(args[1])
+print(compare_equal_len(regex_in, string_in))
