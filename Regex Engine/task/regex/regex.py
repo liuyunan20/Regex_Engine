@@ -15,40 +15,66 @@ def compare_each(char1, char2):
     return False
 
 
-def compare_equal_len(regex: deque, string: deque) -> bool:
+def compare_equal_len(regex: list, string: list) -> bool:
+    global flag
     if not regex:
         return True
     elif not string:
         return False
-    elif not compare_each(regex.popleft(), string.popleft()):
+    elif not compare_each(regex[0], string[0]):
+        if regex[0] == "?":
+            regex.pop(0)
+            return compare_equal_len(regex, string)
+        if len(regex) >= 2 and (regex[1] == "?" or regex[1] == "*" or (flag == 1 and regex[1] == "+")):
+            regex.pop(0)
+            regex.pop(0)
+            flag = 0
+            return compare_equal_len(regex, string)
         return False
+    elif len(regex) >= 2 and (regex[1] == "*" or regex[1] == "+"):
+        string.pop(0)
+        flag = 1
+        if not string:
+            return True
+        if len(regex) > 2 and len(string) == len(regex) - 2:
+            regex.pop(0)
+            regex.pop(0)
+        return compare_equal_len(regex, string)
+
+    string.pop(0)
+    regex.pop(0)
     return compare_equal_len(regex, string)
 
 
 def compare_dif_len(regex: list, string: list) -> bool:
     if not regex:
         return True
-    elif regex[0] == "^":
-        if regex[-1] == "$":
-            if len(regex) - 2 == len(string):
-                return compare_equal_len(deque(regex[1: len(regex) - 1]), deque(string))
-            else:
-                return False
-        else:
-            return compare_equal_len(deque(regex[1:]), deque(string))
-    elif regex[-1] == "$":
-        regex.reverse()
-        string.reverse()
-        return compare_equal_len(deque(regex[1:]), deque(string))
-    elif len(regex) == len(string):
-        return compare_equal_len(deque(regex), deque(string))
-    elif len(regex) < len(string):
-        for i in range(len(string) - len(regex) + 1):
-            if compare_equal_len(deque(regex), deque(string[i: i + len(regex) + 1])):
+    if regex[0] == "^" and regex[-1] == "$":
+        compare_equal_len(regex[1: len(regex) - 1], string)
+        if not string:
+            return True
+        return False
+    if regex[0] == "^":
+        return compare_equal_len(regex[1:], string)
+    if regex[-1] == "$":
+        regex.pop()
+        while string:
+            string_colon = [x for x in string]
+            regex_colon = [x for x in regex]
+            if compare_equal_len(regex_colon, string_colon) and not string_colon:
                 return True
+            string.pop(0)
+        return False
+    while string:
+        string_colon = [x for x in string]
+        regex_colon = [x for x in regex]
+        if compare_equal_len(regex_colon, string_colon):
+            return True
+        string.pop(0)
     return False
 
 
+flag = 0
 args = input().split("|")
 regex_in = list(args[0])
 string_in = list(args[1])
