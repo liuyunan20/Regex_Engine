@@ -19,8 +19,23 @@ def compare_equal_len(regex: list, string: list) -> bool:
     global flag
     if not regex:
         return True
-    elif not string:
+    if not string:
         return False
+    if regex[0] == "\\":
+        if regex[1] == "." and string[0] == ".":
+            string.pop(0)
+            regex.pop(0)
+            regex.pop(0)
+            return compare_equal_len(regex, string)
+        elif regex[1] == "." and string[0] != ".":
+            return False
+        elif compare_each(regex[1], string[0]):
+            regex.pop(0)
+            regex.pop(0)
+            string.pop(0)
+            return compare_equal_len(regex, string)
+        else:
+            return False
     elif not compare_each(regex[0], string[0]):
         if regex[0] == "?":
             regex.pop(0)
